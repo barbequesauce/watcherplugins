@@ -21,22 +21,24 @@ if user:
 else:
     url = u'http://{}:{}/jsonrpc'.format(kodi_address, kodi_port)
 
-post_data = json.dumps({'jsonrpc': '2.0',
+post_data = json.dumps({
+                        'jsonrpc': '2.0',
                         'id': 0,
                         'method': 'VideoLibrary.Scan'
-                        })
+                       })
 
-headers = {'User-Agent': 'Watcher'}
+headers = {'User-Agent': 'Watcher', 'Content-Type': 'application/json'}
 
-request = urllib.request.Request(url, post_data, headers=headers)
+request = urllib.request.Request(url, post_data.encode('utf-8'), headers=headers)
 
 try:
-    response = json.loads(urllib.request.urlopen(request))
-    if response['result'] == 'OK':
+    response = urllib.request.urlopen(request)
+    result = json.loads(response.read().decode('utf-8'))
+    if result['result'] == 'OK':
         print('KODI Response: "OK"')
         sys.exit(0)
     else:
-        print('KODI Response: {}'.format(response['result']))
+        print('KODI Response: {}'.format(result['result']))
 except Exception as e:
     print(str(e))
     sys.exit(1)
