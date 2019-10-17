@@ -21,10 +21,17 @@ if user:
 else:
     url = u'http://{}:{}/jsonrpc'.format(kodi_address, kodi_port)
 
+directory = os.path.dirname(new_file_location)
+if 'map_from' in conf and 'map_to' in conf and conf['map_from'] and conf['map_to']:
+    directory = directory.replace(conf['map_from'], conf['map_to'])
+
 post_data = json.dumps({
                         'jsonrpc': '2.0',
                         'id': 0,
-                        'method': 'VideoLibrary.Scan'
+                        'method': 'VideoLibrary.Scan',
+                        'params': {
+                            'directory': directory
+                        }
                        })
 
 headers = {'User-Agent': 'Watcher', 'Content-Type': 'application/json'}
