@@ -5,7 +5,7 @@
 import sys
 import os
 import json
-import urllib.request
+import requests
 
 script, title, year, imdbid, resolution, rated, original_file, new_file_location, downloadid, finished_date, quality, conf_json = sys.argv
 
@@ -16,10 +16,11 @@ kodi_address = conf['address']
 kodi_port = conf['port']
 
 
+url = u'http://{}:{}/jsonrpc'.format(kodi_address, kodi_port)
 if user:
-    url = u'http://{}:{}@{}:{}/jsonrpc'.format(user, password, kodi_address, kodi_port)
+    auth = (user, password)
 else:
-    url = u'http://{}:{}/jsonrpc'.format(kodi_address, kodi_port)
+    auth = None
 
 directory = os.path.dirname(new_file_location)
 if 'map_from' in conf and 'map_to' in conf and conf['map_from'] and conf['map_to']:
@@ -36,16 +37,19 @@ post_data = json.dumps({
 
 headers = {'User-Agent': 'Watcher', 'Content-Type': 'application/json'}
 
-request = urllib.request.Request(url, post_data.encode('utf-8'), headers=headers)
-
 try:
-    response = urllib.request.urlopen(request)
-    result = json.loads(response.read().decode('utf-8'))
-    if result['result'] == 'OK':
-        print('KODI Response: "OK"')
-        sys.exit(0)
+    print(url, post_data.encode('utf-8'), headers, auth)
+    response = requests.post(url, post_data.encode('utf-8'), headers=headers, auth=auth)
+    if response.status_code == requests.codes.ok:
+        result = response.json()
+        if result['result'] == 'OK':
+            print('KODI Response: "OK"')
+        else:
+            print('KODI Response: {}'.format(result['result']))
+            sys.exit(1)
     else:
-        print('KODI Response: {}'.format(result['result']))
+        print('KODI HTTP status: {}'.format(response.status_code))
+        sys.exit(1)
 except Exception as e:
     print(str(e))
     sys.exit(1)
