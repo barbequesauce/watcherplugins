@@ -38,7 +38,6 @@ post_data = json.dumps({
 headers = {'User-Agent': 'Watcher', 'Content-Type': 'application/json'}
 
 try:
-    print(url, post_data.encode('utf-8'), headers, auth)
     response = requests.post(url, post_data.encode('utf-8'), headers=headers, auth=auth)
     if response.status_code == requests.codes.ok:
         result = response.json()
